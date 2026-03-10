@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock } from 'lucide-react';
+import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X } from 'lucide-react';
 import './AdminPanel.css';
 
 export default function AdminPanel() {
@@ -9,6 +9,7 @@ export default function AdminPanel() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [userList, setUserList] = useState([]);
+  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'requests'
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,6 +47,26 @@ export default function AdminPanel() {
 
     fetchAdminData();
   }, [user, token, loading, navigate]);
+
+  const pendingUsers = userList.filter(u => u.plan === 'pending_pro');
+  const activeUsers = userList.filter(u => u.plan !== 'pending_pro');
+
+  const displayedUsers = activeTab === 'requests' ? pendingUsers : activeUsers;
+
+  const handleStatusChange = async (targetUserId, action) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/admin/users/${targetUserId}/${action}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('İşlem başarısız.');
+      
+      const { user: updatedUser } = await res.json();
+      setUserList(prev => prev.map(u => u.id === updatedUser.id ? { ...u, plan: updatedUser.plan } : u));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   if (loading || isLoading) {
     return (
@@ -124,7 +145,21 @@ export default function AdminPanel() {
 
         <section className="admin-users-section">
           <div className="admin-section-header">
-            <h2><Users size={20} /> Kayıtlı Kullanıcılar</h2>
+            <div className="admin-tabs">
+              <button 
+                className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
+                onClick={() => setActiveTab('users')}
+              >
+                <Users size={18} /> Kayıtlı Kullanıcılar
+              </button>
+              <button 
+                className={`admin-tab ${activeTab === 'requests' ? 'active' : ''}`}
+                onClick={() => setActiveTab('requests')}
+              >
+                <Clock size={18} /> Bekleyen İstekler
+                {pendingUsers.length > 0 && <span className="admin-tab-badge">{pendingUsers.length}</span>}
+              </button>
+            </div>
           </div>
           <div className="admin-table-container">
             <table className="admin-table">
@@ -136,17 +171,27 @@ export default function AdminPanel() {
                   <th>Plan</th>
                   <th>Rol</th>
                   <th>Kayıt Tarihi</th>
+                  {activeTab === 'requests' && <th>İşlem</th>}
                 </tr>
               </thead>
               <tbody>
-                {userList.map(u => (
+                {displayedUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={activeTab === 'requests' ? 7 : 6} style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>
+                      {activeTab === 'requests' ? 'Bekleyen istek bulunmamaktadır.' : 'Kullanıcı bulunamadı.'}
+                    </td>
+                  </tr>
+                ) : (
+                  displayedUsers.map(u => (
                   <tr key={u.id}>
                     <td>#{u.id}</td>
                     <td>{u.username}</td>
                     <td>{u.email}</td>
                     <td>
                       <span className={`admin-plan-badge ${u.plan}`}>
-                        {u.plan === 'pro' && <Star size={12} />} {u.plan.toUpperCase()}
+                        {u.plan === 'pro' && <Star size={12} />} 
+                        {u.plan === 'pending_pro' && <Clock size={12} />}
+                        {u.plan.toUpperCase().replace('_', ' ')}
                       </span>
                     </td>
                     <td>
@@ -157,8 +202,20 @@ export default function AdminPanel() {
                     <td className="admin-date">
                       <Clock size={12} /> {new Date(u.created_at).toLocaleString('tr-TR')}
                     </td>
+                    {activeTab === 'requests' && (
+                      <td>
+                        <div className="admin-actions">
+                          <button onClick={() => handleStatusChange(u.id, 'approve')} className="admin-action-btn approve" title="Onayla">
+                            <Check size={16} />
+                          </button>
+                          <button onClick={() => handleStatusChange(u.id, 'reject')} className="admin-action-btn reject" title="Reddet">
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, MessageSquare, Trash2, Search, Sparkles, MessagesSquare, LogIn, LogOut, Star, ShieldAlert } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, Search, Sparkles, MessagesSquare, LogIn, LogOut, Star, ShieldAlert, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
@@ -127,7 +127,7 @@ export default function Sidebar({ isOpen, onClose }) {
                     {user.username}
                     <span className={`sidebar-plan-badge ${user.plan || 'basic'}`}>
                       {user.plan === 'pro' && <Star size={10} />}
-                      {user.plan || 'basic'}
+                      {user.plan === 'pro' ? 'PRO' : user.plan === 'pending_pro' ? 'BEKLEYEN İSTEK' : 'BASIC'}
                     </span>
                   </div>
                   <button className="sidebar-logout-btn" onClick={logout}>
@@ -139,6 +139,12 @@ export default function Sidebar({ isOpen, onClose }) {
               {(!user.plan || user.plan === 'basic') && (
                 <button className="sidebar-upgrade-btn" onClick={upgradePlan}>
                   <Sparkles size={14} /> Pro'ya Yükselt
+                </button>
+              )}
+
+              {user.plan === 'pending_pro' && (
+                <button className="sidebar-upgrade-btn pending" disabled style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', cursor: 'not-allowed', borderColor: '#f59e0b' }}>
+                  <Clock size={14} /> Onay Bekleniyor...
                 </button>
               )}
 

@@ -145,10 +145,10 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
 
 app.post('/api/auth/upgrade', requireAuth, (req, res) => {
   try {
-    const updatedUser = upgradeUserPlan(req.user.id, 'pro');
+    const updatedUser = upgradeUserPlan(req.user.id, 'pending_pro');
     res.json({ user: updatedUser });
   } catch (error) {
-    res.status(500).json({ error: 'Plan yükseltilemedi.' });
+    res.status(500).json({ error: 'Yükseltme talebi oluşturulamadı.' });
   }
 });
 
@@ -173,6 +173,24 @@ app.get('/api/admin/users', requireAdmin, (req, res) => {
     res.json({ users });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcılar alınamadı.' });
+  }
+});
+
+app.post('/api/admin/users/:id/approve', requireAdmin, (req, res) => {
+  try {
+    const updatedUser = upgradeUserPlan(req.params.id, 'pro');
+    res.json({ user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Kullanıcı onaylanamadı.' });
+  }
+});
+
+app.post('/api/admin/users/:id/reject', requireAdmin, (req, res) => {
+  try {
+    const updatedUser = upgradeUserPlan(req.params.id, 'basic');
+    res.json({ user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Kullanıcı reddedilemedi.' });
   }
 });
 

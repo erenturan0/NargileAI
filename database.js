@@ -95,7 +95,7 @@ export function findUserById(id) {
   return stmts.findUserById.get(id);
 }
 
-export function upgradeUserPlan(id, newPlan = 'pro') {
+export function upgradeUserPlan(id, newPlan) {
   stmts.upgradeUserPlan.run(newPlan, id);
   return findUserById(id);
 }
