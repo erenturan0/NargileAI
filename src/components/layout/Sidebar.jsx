@@ -148,7 +148,7 @@ export default function Sidebar({ isOpen, onClose }) {
                 </button>
               )}
 
-              {user.role === 'admin' && (
+              {(user.role === 'admin' || user.role === 'superuser') && (
                 <button className="sidebar-admin-btn" onClick={() => { navigate('/admin'); onClose?.(); }}>
                   <ShieldAlert size={14} /> Yönetici Paneli
                 </button>

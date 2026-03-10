@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X } from 'lucide-react';
+import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X, Stars } from 'lucide-react';
 import './AdminPanel.css';
 
 export default function AdminPanel() {
@@ -218,6 +218,7 @@ export default function AdminPanel() {
                     </td>
                     <td>
                       <span className={`admin-role-badge ${u.role}`}>
+                        {u.role === 'superuser' && <Stars size={12} />}
                         {u.role.toUpperCase()}
                       </span>
                     </td>
@@ -236,7 +237,7 @@ export default function AdminPanel() {
                             </button>
                           </>
                         )}
-                        {activeTab === 'users' && u.id !== user.id && (
+                        {activeTab === 'users' && u.id !== user.id && u.role !== 'superuser' && (
                           u.role === 'admin' ? (
                             <button onClick={() => handleRoleChange(u.id, 'user')} className="admin-action-btn demote" title="Normal Kullanıcı Yap">
                               <ShieldAlert size={14} />

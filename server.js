@@ -84,7 +84,7 @@ function requireAuth(req, res, next) {
 
 function requireAdmin(req, res, next) {
   requireAuth(req, res, () => {
-    if (req.user && req.user.role === 'admin') {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'superuser')) {
       next();
     } else {
       res.status(403).json({ error: 'Bu işlem için yönetici yetkisi gereklidir.' });
@@ -199,11 +199,20 @@ app.post('/api/admin/users/:id/role', requireAdmin, (req, res) => {
     const { role } = req.body;
     
     if (role !== 'admin' && role !== 'user') {
-      return res.status(400).json({ error: 'Geçersiz rol.' });
+      return res.status(400).json({ error: 'Geçersiz rol belirtildi.' });
     }
 
     if (targetId === req.user.id) {
       return res.status(403).json({ error: 'Kendi yetkinizi değiştiremezsiniz.' });
+    }
+
+    const targetUser = findUserById(targetId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    }
+    
+    if (targetUser.role === 'superuser') {
+       return res.status(403).json({ error: 'Superuser yetkisine müdahale edilemez.' });
     }
 
     const updatedUser = updateUserRole(targetId, role);
