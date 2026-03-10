@@ -16,8 +16,8 @@ export default function AdminPanel() {
   useEffect(() => {
     if (loading) return;
     
-    // Redirect if not admin
-    if (!user || user.role !== 'admin') {
+    // Redirect if not admin or superuser
+    if (!user ||   (user.role !== 'admin' && user.role !== 'superuser')) {
       navigate('/');
       return;
     }
