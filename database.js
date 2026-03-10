@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const db = new Database(join(__dirname, 'nargile.db'));
+export const db = new Database(join(__dirname, 'nargile.db'));
 
 // Enable WAL mode for better performance
 db.pragma('journal_mode = WAL');
@@ -64,6 +64,7 @@ const stmts = {
   findUserByEmail: db.prepare('SELECT * FROM users WHERE email = ?'),
   findUserById: db.prepare('SELECT id, username, email, plan, role, created_at FROM users WHERE id = ?'),
   upgradeUserPlan: db.prepare('UPDATE users SET plan = ? WHERE id = ?'),
+  updateUserRole: db.prepare('UPDATE users SET role = ? WHERE id = ?'),
   makeUserAdmin: db.prepare("UPDATE users SET role = 'admin' WHERE username = ?"),
 
   createConversation: db.prepare('INSERT INTO conversations (id, user_id, title) VALUES (?, ?, ?)'),
@@ -97,6 +98,11 @@ export function findUserById(id) {
 
 export function upgradeUserPlan(id, newPlan) {
   stmts.upgradeUserPlan.run(newPlan, id);
+  return findUserById(id);
+}
+
+export function updateUserRole(id, newRole) {
+  stmts.updateUserRole.run(newRole, id);
   return findUserById(id);
 }
 

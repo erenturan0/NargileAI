@@ -7,7 +7,7 @@ import {
   createUser, authenticateUser, findUserById, upgradeUserPlan,
   createConversation as dbCreateConv, getConversations as dbGetConvs,
   updateConversationTitle, deleteConversation as dbDeleteConv,
-  addMessage,
+  addMessage, updateUserRole, db
 } from './database.js';
 
 dotenv.config();
@@ -153,7 +153,6 @@ app.post('/api/auth/upgrade', requireAuth, (req, res) => {
 });
 
 // ----- Admin Routes -----
-import db from './database.js';
 
 app.get('/api/admin/stats', requireAdmin, (req, res) => {
   try {
@@ -191,6 +190,26 @@ app.post('/api/admin/users/:id/reject', requireAdmin, (req, res) => {
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcı reddedilemedi.' });
+  }
+});
+
+app.post('/api/admin/users/:id/role', requireAdmin, (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id, 10);
+    const { role } = req.body;
+    
+    if (role !== 'admin' && role !== 'user') {
+      return res.status(400).json({ error: 'Geçersiz rol.' });
+    }
+
+    if (targetId === req.user.id) {
+      return res.status(403).json({ error: 'Kendi yetkinizi değiştiremezsiniz.' });
+    }
+
+    const updatedUser = updateUserRole(targetId, role);
+    res.json({ user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Kullanıcı yetkisi güncellenemedi.' });
   }
 });
 

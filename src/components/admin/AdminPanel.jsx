@@ -68,6 +68,28 @@ export default function AdminPanel() {
     }
   };
 
+  const handleRoleChange = async (targetUserId, newRole) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/admin/users/${targetUserId}/role`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ role: newRole })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Yetki değiştirilemedi.');
+      }
+      
+      const { user: updatedUser } = await res.json();
+      setUserList(prev => prev.map(u => u.id === updatedUser.id ? { ...u, role: updatedUser.role } : u));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   if (loading || isLoading) {
     return (
       <div className="admin-loading">
@@ -171,7 +193,7 @@ export default function AdminPanel() {
                   <th>Plan</th>
                   <th>Rol</th>
                   <th>Kayıt Tarihi</th>
-                  {activeTab === 'requests' && <th>İşlem</th>}
+                  <th>İşlem</th>
                 </tr>
               </thead>
               <tbody>
@@ -202,18 +224,31 @@ export default function AdminPanel() {
                     <td className="admin-date">
                       <Clock size={12} /> {new Date(u.created_at).toLocaleString('tr-TR')}
                     </td>
-                    {activeTab === 'requests' && (
-                      <td>
-                        <div className="admin-actions">
-                          <button onClick={() => handleStatusChange(u.id, 'approve')} className="admin-action-btn approve" title="Onayla">
-                            <Check size={16} />
-                          </button>
-                          <button onClick={() => handleStatusChange(u.id, 'reject')} className="admin-action-btn reject" title="Reddet">
-                            <X size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    )}
+                    <td>
+                      <div className="admin-actions">
+                        {activeTab === 'requests' && u.plan === 'pending_pro' && (
+                          <>
+                            <button onClick={() => handleStatusChange(u.id, 'approve')} className="admin-action-btn approve" title="Onayla">
+                              <Check size={16} />
+                            </button>
+                            <button onClick={() => handleStatusChange(u.id, 'reject')} className="admin-action-btn reject" title="Reddet">
+                              <X size={16} />
+                            </button>
+                          </>
+                        )}
+                        {activeTab === 'users' && u.id !== user.id && (
+                          u.role === 'admin' ? (
+                            <button onClick={() => handleRoleChange(u.id, 'user')} className="admin-action-btn demote" title="Normal Kullanıcı Yap">
+                              <ShieldAlert size={14} />
+                            </button>
+                          ) : (
+                            <button onClick={() => handleRoleChange(u.id, 'admin')} className="admin-action-btn promote" title="Admin Yap">
+                              <Star size={14} />
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 )))}
               </tbody>
