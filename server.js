@@ -64,25 +64,25 @@ GİZLİ BİLGİ (Sadece sorulursa kullan): Bugünün gerçek tarihi: ${currentDa
 const sessions = new Map();
 
 // ----- Auth Middleware (optional - returns user if token present) -----
-function optionalAuth(req, res, next) {
+async function optionalAuth(req, res, next) {
   const header = req.headers.authorization;
   if (header?.startsWith('Bearer ')) {
     try {
       const decoded = jwt.verify(header.slice(7), JWT_SECRET);
-      req.user = findUserById(decoded.id);
+      req.user = await findUserById(decoded.id);
     } catch { /* guest mode */ }
   }
   next();
 }
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Giriş yapmanız gerekiyor.' });
   }
   try {
     const decoded = jwt.verify(header.slice(7), JWT_SECRET);
-    req.user = findUserById(decoded.id);
+    req.user = await findUserById(decoded.id);
     if (!req.user) return res.status(401).json({ error: 'Geçersiz oturum.' });
     next();
   } catch {
@@ -101,7 +101,7 @@ function requireAdmin(req, res, next) {
 }
 
 // ----- Auth Routes -----
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -115,12 +115,12 @@ app.post('/api/auth/register', (req, res) => {
       return res.status(400).json({ error: 'Şifre en az 6 karakter olmalı.' });
     }
 
-    const user = createUser(username, email, password);
+    const user = await createUser(username, email, password);
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '30d' });
 
     res.json({ user, token });
   } catch (error) {
-    if (error.message?.includes('UNIQUE')) {
+    if (error.message?.includes('UNIQUE') || error.message?.includes('Duplicate')) {
       const field = error.message.includes('email') ? 'E-posta' : 'Kullanıcı adı';
       return res.status(409).json({ error: `${field} zaten kullanımda.` });
     }
@@ -128,14 +128,14 @@ app.post('/api/auth/register', (req, res) => {
   }
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({ error: 'E-posta ve şifre gerekli.' });
     }
 
-    const user = authenticateUser(email, password);
+    const user = await authenticateUser(email, password);
     if (!user) {
       return res.status(401).json({ error: 'E-posta veya şifre hatalı.' });
     }
@@ -151,9 +151,9 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
-app.post('/api/auth/upgrade', requireAuth, (req, res) => {
+app.post('/api/auth/upgrade', requireAuth, async (req, res) => {
   try {
-    const updatedUser = upgradeUserPlan(req.user.id, 'pending_pro');
+    const updatedUser = await upgradeUserPlan(req.user.id, 'pending_pro');
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Yükseltme talebi oluşturulamadı.' });
@@ -162,46 +162,52 @@ app.post('/api/auth/upgrade', requireAuth, (req, res) => {
 
 // ----- Admin Routes -----
 
-app.get('/api/admin/stats', requireAdmin, (req, res) => {
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   try {
-    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-    const proUserCount = db.prepare('SELECT COUNT(*) as count FROM users WHERE plan = ?').get('pro').count;
-    const conversationCount = db.prepare('SELECT COUNT(*) as count FROM conversations').get().count;
-    const messageCount = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
-    res.json({ userCount, proUserCount, conversationCount, messageCount });
+    const [[usersRow]] = await db.execute('SELECT COUNT(*) as count FROM users');
+    const [[proUsersRow]] = await db.execute('SELECT COUNT(*) as count FROM users WHERE plan = ?', ['pro']);
+    const [[convsRow]] = await db.execute('SELECT COUNT(*) as count FROM conversations');
+    const [[msgsRow]] = await db.execute('SELECT COUNT(*) as count FROM messages');
+    
+    res.json({ 
+      userCount: usersRow.count, 
+      proUserCount: proUsersRow.count, 
+      conversationCount: convsRow.count, 
+      messageCount: msgsRow.count 
+    });
   } catch (error) {
     res.status(500).json({ error: 'İstatistikler alınamadı.' });
   }
 });
 
-app.get('/api/admin/users', requireAdmin, (req, res) => {
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
-    const users = db.prepare('SELECT id, username, email, plan, role, created_at FROM users ORDER BY created_at DESC').all();
+    const [users] = await db.execute('SELECT id, username, email, plan, role, created_at FROM users ORDER BY created_at DESC');
     res.json({ users });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcılar alınamadı.' });
   }
 });
 
-app.post('/api/admin/users/:id/approve', requireAdmin, (req, res) => {
+app.post('/api/admin/users/:id/approve', requireAdmin, async (req, res) => {
   try {
-    const updatedUser = upgradeUserPlan(req.params.id, 'pro');
+    const updatedUser = await upgradeUserPlan(req.params.id, 'pro');
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcı onaylanamadı.' });
   }
 });
 
-app.post('/api/admin/users/:id/reject', requireAdmin, (req, res) => {
+app.post('/api/admin/users/:id/reject', requireAdmin, async (req, res) => {
   try {
-    const updatedUser = upgradeUserPlan(req.params.id, 'basic');
+    const updatedUser = await upgradeUserPlan(req.params.id, 'basic');
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcı reddedilemedi.' });
   }
 });
 
-app.post('/api/admin/users/:id/role', requireAdmin, (req, res) => {
+app.post('/api/admin/users/:id/role', requireAdmin, async (req, res) => {
   try {
     const targetId = parseInt(req.params.id, 10);
     const { role } = req.body;
@@ -214,7 +220,7 @@ app.post('/api/admin/users/:id/role', requireAdmin, (req, res) => {
       return res.status(403).json({ error: 'Kendi yetkinizi değiştiremezsiniz.' });
     }
 
-    const targetUser = findUserById(targetId);
+    const targetUser = await findUserById(targetId);
     if (!targetUser) {
       return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     }
@@ -223,14 +229,14 @@ app.post('/api/admin/users/:id/role', requireAdmin, (req, res) => {
        return res.status(403).json({ error: 'Superuser yetkisine müdahale edilemez.' });
     }
 
-    const updatedUser = updateUserRole(targetId, role);
+    const updatedUser = await updateUserRole(targetId, role);
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcı yetkisi güncellenemedi.' });
   }
 });
 
-app.post('/api/admin/users/:id/plan', requireAdmin, (req, res) => {
+app.post('/api/admin/users/:id/plan', requireAdmin, async (req, res) => {
   try {
     const targetId = parseInt(req.params.id, 10);
     const { plan } = req.body;
@@ -239,12 +245,12 @@ app.post('/api/admin/users/:id/plan', requireAdmin, (req, res) => {
       return res.status(400).json({ error: 'Geçersiz plan belirtildi.' });
     }
 
-    const targetUser = findUserById(targetId);
+    const targetUser = await findUserById(targetId);
     if (!targetUser) {
       return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
     }
 
-    const updatedUser = upgradeUserPlan(targetId, plan);
+    const updatedUser = await upgradeUserPlan(targetId, plan);
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcı planı güncellenemedi.' });
@@ -252,18 +258,18 @@ app.post('/api/admin/users/:id/plan', requireAdmin, (req, res) => {
 });
 
 // ----- Conversation Routes (authenticated only) -----
-app.get('/api/conversations', requireAuth, (req, res) => {
+app.get('/api/conversations', requireAuth, async (req, res) => {
   try {
-    const conversations = dbGetConvs(req.user.id);
+    const conversations = await dbGetConvs(req.user.id);
     res.json({ conversations });
   } catch {
     res.status(500).json({ error: 'Sohbetler yüklenemedi.' });
   }
 });
 
-app.delete('/api/conversations/:id', requireAuth, (req, res) => {
+app.delete('/api/conversations/:id', requireAuth, async (req, res) => {
   try {
-    dbDeleteConv(req.params.id, req.user.id);
+    await dbDeleteConv(req.params.id, req.user.id);
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: 'Sohbet silinemedi.' });
@@ -283,11 +289,11 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
     if (req.user && conversationId) {
       try {
         // Create conversation if needed
-        dbCreateConv(conversationId, req.user.id, conversationTitle || 'Yeni Sohbet');
+        await dbCreateConv(conversationId, req.user.id, conversationTitle || 'Yeni Sohbet');
       } catch { /* already exists */ }
 
       if (conversationTitle) {
-        updateConversationTitle(conversationId, req.user.id, conversationTitle);
+        await updateConversationTitle(conversationId, req.user.id, conversationTitle);
       }
 
       // Save user message
@@ -295,9 +301,9 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
         role: 'user',
         content: message,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toISOString().slice(0, 19).replace('T', ' '),
       };
-      addMessage(conversationId, req.user.id, userMsg);
+      await addMessage(conversationId, req.user.id, userMsg);
     }
 
     // Get or create session history
@@ -349,9 +355,10 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
         id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
         role: 'assistant',
         content: fullResponse,
-        timestamp: new Date().toISOString(),
+        // MySQL TIMESTAMP generic format without T
+        timestamp: new Date().toISOString().slice(0, 19).replace('T', ' '),
       };
-      addMessage(conversationId, req.user.id, aiMsg);
+      await addMessage(conversationId, req.user.id, aiMsg);
     }
 
     res.write(`data: ${JSON.stringify({ text: '', done: true })}\n\n`);
