@@ -120,7 +120,6 @@
   transition: all var(--transition-fast);
   margin-bottom: 2px;
   position: relative;
-  group: conversation;
 }
 
 .conversation-item:hover {
@@ -234,6 +233,53 @@
 
 .sidebar-logout-btn:hover {
   color: #ef4444; /* red icon on hover */
+}
+
+/* Plan Badges & Upgrade Button */
+.sidebar-plan-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: var(--space-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sidebar-plan-badge.basic {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-tertiary);
+}
+
+.sidebar-plan-badge.pro {
+  background: var(--accent-gradient);
+  color: white;
+  box-shadow: var(--accent-glow);
+}
+
+.sidebar-upgrade-btn {
+  background: var(--accent-gradient);
+  color: white;
+  border: none;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-sm);
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-upgrade-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--accent-glow);
 }
 
 .sidebar-auth-btn {

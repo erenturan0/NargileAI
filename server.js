@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import {
-  createUser, authenticateUser, findUserById,
+  createUser, authenticateUser, findUserById, upgradeUserPlan,
   createConversation as dbCreateConv, getConversations as dbGetConvs,
   updateConversationTitle, deleteConversation as dbDeleteConv,
   addMessage,
@@ -27,7 +27,7 @@ const getSystemPrompt = () => {
 
   return `Sen "NargileAI" adında, dünya genelinde nargile (hookah/shisha) konusunda uzmanlaşmış bir yapay zeka asistanısın. 
 
-KESİN BİLGİ: Bugünün gerçek tarihi: ${currentDate}. Eğitildiğin tarih geçmişte kalmış olabilir, ancak sen şu anda ${currentDate} tarihindesin. Sana "Bugün ayın kaçı?", "Hangi yıldayız?" veya "Tarih ne?" gibi sorular sorulduğunda istisnasız olarak bu tarihi (${currentDate}) söylemelisin. Asla 2024 veya başka bir geçmiş tarihi söyleme.
+GİZLİ BİLGİ (Sadece sorulursa kullan): Bugünün gerçek tarihi: ${currentDate}. Sen şu anda bu tarihtesindir. Ancak bu bilgiyi SADECE kullanıcı sana özel olarak tarihi, saati, günü veya yılı sorarsa söyle. Normal nargile sohbetlerinde bu tarihi kesinlikle telaffuz etme veya cümlenin içine katma. Asla 2024 deme.
 
 ## Uzmanlık Alanların:
 - Nargile tarihi ve kültürü (Osmanlı, Orta Doğu, Hindistan, modern dünya)
@@ -48,7 +48,8 @@ KESİN BİLGİ: Bugünün gerçek tarihi: ${currentDate}. Eğitildiğin tarih ge
 4. Bilmediğin konularda dürüst ol, uydurma bilgi verme.
 5. Sağlık konularında her zaman tarafsız ol ve kullanıcıları kendi araştırma yapmaya teşvik et.
 6. Samimi ama profesyonel bir üslup kullan. Emoji kullanabilirsin.
-7. Marka karşılaştırmalarında tarafsız ol.`;
+7. Marka karşılaştırmalarında tarafsız ol.
+8. Aroma ve karışım önerilerinde bulunurken; tarçın, zencefil, gül gibi aşırı niş, yöresel veya bulunması zor tütünleri önermekten kaçın. Çift elma, nane, limon, şeftali, üzüm, Love 66, Lady Killer gibi Türkiye'deki kafelerde ve tütüncülerde EN ÇOK BİLİNEN ve herkesin kolayca bulabileceği mainstream/popüler aromalar üzerinden öneriler yap.`;
 };
 
 // In-memory session history for Gemini context
@@ -132,6 +133,15 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
+app.post('/api/auth/upgrade', requireAuth, (req, res) => {
+  try {
+    const updatedUser = upgradeUserPlan(req.user.id, 'pro');
+    res.json({ user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Plan yükseltilemedi.' });
+  }
+});
+
 // ----- Conversation Routes (authenticated only) -----
 app.get('/api/conversations', requireAuth, (req, res) => {
   try {
@@ -192,8 +202,13 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    // Determine model based on user plan
+    const modelName = (req.user && req.user.plan === 'pro') 
+      ? 'gemini-3.1-flash-lite-preview' 
+      : 'gemini-1.5-flash-8b';
+
     const chat = ai.chats.create({
-      model: 'gemini-3.1-flash-lite-preview',
+      model: modelName,
       config: {
         systemInstruction: getSystemPrompt(),
       },

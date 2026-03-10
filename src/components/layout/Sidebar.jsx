@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, MessageSquare, Trash2, Search, Sparkles, MessagesSquare, LogIn, LogOut } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, Search, Sparkles, MessagesSquare, LogIn, LogOut, Star } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
@@ -13,7 +13,7 @@ export default function Sidebar({ isOpen, onClose }) {
     deleteConversation,
   } = useChat();
 
-  const { user, isGuest, logout, setShowAuthModal } = useAuth();
+  const { user, isGuest, logout, setShowAuthModal, upgradePlan } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredConversations = useMemo(() => {
@@ -115,16 +115,30 @@ export default function Sidebar({ isOpen, onClose }) {
               <span>Giriş Yap / Kayıt Ol</span>
             </button>
           ) : (
-            <div className="sidebar-footer-info">
-              <div className="sidebar-footer-avatar">
-                {user.username.charAt(0).toUpperCase()}
+            <div className="sidebar-footer-container">
+              <div className="sidebar-footer-info">
+                <div className="sidebar-footer-avatar">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="sidebar-footer-text">
+                  <div className="sidebar-footer-name" title={user.username}>
+                    {user.username}
+                    <span className={`sidebar-plan-badge ${user.plan || 'basic'}`}>
+                      {user.plan === 'pro' && <Star size={10} />}
+                      {user.plan || 'basic'}
+                    </span>
+                  </div>
+                  <button className="sidebar-logout-btn" onClick={logout}>
+                    <LogOut size={12} /> Çıkış
+                  </button>
+                </div>
               </div>
-              <div className="sidebar-footer-text">
-                <div className="sidebar-footer-name" title={user.username}>{user.username}</div>
-                <button className="sidebar-logout-btn" onClick={logout}>
-                  <LogOut size={12} /> Çıkış
+              
+              {(!user.plan || user.plan === 'basic') && (
+                <button className="sidebar-upgrade-btn" onClick={upgradePlan}>
+                  <Sparkles size={14} /> Pro'ya Yükselt
                 </button>
-              </div>
+              )}
             </div>
           )}
         </div>

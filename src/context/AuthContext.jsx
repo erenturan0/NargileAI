@@ -69,10 +69,26 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  const upgradePlan = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/upgrade`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data.user);
+      }
+    } catch (err) {
+      console.error("Yükseltme hatası:", err);
+    }
+  }, [token]);
+
   const value = {
     user, token, isGuest, loading,
     showAuthModal, setShowAuthModal,
-    login, register, logout,
+    login, register, logout, upgradePlan,
   };
 
   return (
