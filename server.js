@@ -120,8 +120,8 @@ app.post('/api/auth/register', async (req, res) => {
 
     res.json({ user, token });
   } catch (error) {
-    if (error.message?.includes('UNIQUE') || error.message?.includes('Duplicate')) {
-      const field = error.message.includes('email') ? 'E-posta' : 'Kullanıcı adı';
+    if (error.code === '23505' || error.message?.includes('UNIQUE') || error.message?.includes('Duplicate')) {
+      const field = error.detail?.includes('email') || error.message?.includes('email') ? 'E-posta' : 'Kullanıcı adı';
       return res.status(409).json({ error: `${field} zaten kullanımda.` });
     }
     res.status(500).json({ error: 'Kayıt sırasında bir hata oluştu.' });
