@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X, Stars } from 'lucide-react';
+import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X, Stars, TrendingUp, TrendingDown } from 'lucide-react';
 import './AdminPanel.css';
 
 export default function AdminPanel() {
@@ -85,6 +85,30 @@ export default function AdminPanel() {
       
       const { user: updatedUser } = await res.json();
       setUserList(prev => prev.map(u => u.id === updatedUser.id ? { ...u, role: updatedUser.role } : u));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handlePlanChange = async (userId, newPlan) => {
+    try {
+      const res = await fetch(`http://localhost:3001/api/admin/users/${userId}/plan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ plan: newPlan })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Plan değiştirilemedi.');
+      }
+      
+      const { user: updatedUser } = await res.json();
+      // If activeTab is 'requests', remove them from the list if approved/rejected via this button, OR just update their plan
+      // We will just update their plan normally so they remain in the list if the user was just looking at 'users'
+      setUserList(prev => prev.map(u => u.id === updatedUser.id ? { ...u, plan: updatedUser.plan } : u));
     } catch (err) {
       alert(err.message);
     }
@@ -237,16 +261,30 @@ export default function AdminPanel() {
                             </button>
                           </>
                         )}
-                        {activeTab === 'users' && u.id !== user.id && u.role !== 'superuser' && (
-                          u.role === 'admin' ? (
-                            <button onClick={() => handleRoleChange(u.id, 'user')} className="admin-action-btn demote" title="Normal Kullanıcı Yap">
-                              <ShieldAlert size={14} />
-                            </button>
-                          ) : (
-                            <button onClick={() => handleRoleChange(u.id, 'admin')} className="admin-action-btn promote" title="Admin Yap">
-                              <Star size={14} />
-                            </button>
-                          )
+                        {activeTab === 'users' && u.id !== user.id && (
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            {u.role !== 'superuser' && (
+                              u.role === 'admin' ? (
+                                <button onClick={() => handleRoleChange(u.id, 'user')} className="admin-action-btn demote" title="Normal Kullanıcı Yap">
+                                  <ShieldAlert size={14} />
+                                </button>
+                              ) : (
+                                <button onClick={() => handleRoleChange(u.id, 'admin')} className="admin-action-btn promote" title="Admin Yap">
+                                  <Star size={14} />
+                                </button>
+                              )
+                            )}
+                            
+                            {u.plan === 'pro' ? (
+                              <button onClick={() => handlePlanChange(u.id, 'basic')} className="admin-action-btn demote" title="Basic Plan'a Düşür">
+                                <TrendingDown size={14} />
+                              </button>
+                            ) : (
+                              <button onClick={() => handlePlanChange(u.id, 'pro')} className="admin-action-btn promote" title="Pro Plan'a Yükselt">
+                                <TrendingUp size={14} />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>

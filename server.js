@@ -222,6 +222,27 @@ app.post('/api/admin/users/:id/role', requireAdmin, (req, res) => {
   }
 });
 
+app.post('/api/admin/users/:id/plan', requireAdmin, (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id, 10);
+    const { plan } = req.body;
+
+    if (plan !== 'basic' && plan !== 'pro') {
+      return res.status(400).json({ error: 'Geçersiz plan belirtildi.' });
+    }
+
+    const targetUser = findUserById(targetId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    }
+
+    const updatedUser = upgradeUserPlan(targetId, plan);
+    res.json({ user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ error: 'Kullanıcı planı güncellenemedi.' });
+  }
+});
+
 // ----- Conversation Routes (authenticated only) -----
 app.get('/api/conversations', requireAuth, (req, res) => {
   try {
