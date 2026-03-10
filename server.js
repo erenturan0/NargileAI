@@ -3,6 +3,8 @@ import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import {
   createUser, authenticateUser, findUserById, upgradeUserPlan,
   createConversation as dbCreateConv, getConversations as dbGetConvs,
@@ -12,9 +14,15 @@ import {
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'dist')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nargile-ai-secret-key-2024';
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -368,6 +376,11 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
       res.status(500).json({ error: userMessage });
     }
   }
+});
+
+// Any other route should serve the React app (Client-side routing fallback)
+app.use((req, res, next) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Cleanup

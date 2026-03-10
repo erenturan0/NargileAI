@@ -1,0 +1,45 @@
+# Derlenmiş dosyalar
+dist/
+build/
+.vite/
+
+# Bağımlılıklar
+node_modules/
+
+# Veritabanı (Cloud Run'da boş başlanmasını sağlamak/eski verileri almamak için - localdeki test db gitmesin diye)
+# Eğer volume mount yapmayacaksanız ve default database.sqlite ile başlamak istiyorsanız yorum satırı yapın.
+# Şimdilik Cloud Run için veritabanını dışarıda bırakıyoruz, çünkü container'da sıfırdan yüklenebilir. 
+# Eğer local dekini buluta aktarmak isterseniz bu yorumu kaldırın:
+database.sqlite
+
+# Loglar ve geçici dosyalar
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Mac/Windows sistem dosyaları
+.DS_Store
+Thumbs.db
+
+# IDE / Editor dosyaları
+.vscode/
+.idea/
+.fleet/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Cloud Run / Docker yapılandırması
+Dockerfile
+.dockerignore
+
+# Gemini Chatbot Proje Artıkları
+.gemini/
+.agents/
+.cortex/
+.cortex_tmp/
