@@ -282,6 +282,30 @@
   box-shadow: var(--accent-glow);
 }
 
+.sidebar-admin-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px dashed rgba(239, 68, 68, 0.4);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-xs);
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--transition-fast);
+}
+
+.sidebar-admin-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-style: solid;
+  transform: translateY(-1px);
+}
+
 .sidebar-auth-btn {
   width: 100%;
   display: flex;

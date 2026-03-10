@@ -82,6 +82,16 @@ function requireAuth(req, res, next) {
   }
 }
 
+function requireAdmin(req, res, next) {
+  requireAuth(req, res, () => {
+    if (req.user && req.user.role === 'admin') {
+      next();
+    } else {
+      res.status(403).json({ error: 'Bu işlem için yönetici yetkisi gereklidir.' });
+    }
+  });
+}
+
 // ----- Auth Routes -----
 app.post('/api/auth/register', (req, res) => {
   try {
@@ -139,6 +149,30 @@ app.post('/api/auth/upgrade', requireAuth, (req, res) => {
     res.json({ user: updatedUser });
   } catch (error) {
     res.status(500).json({ error: 'Plan yükseltilemedi.' });
+  }
+});
+
+// ----- Admin Routes -----
+import db from './database.js';
+
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
+  try {
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+    const proUserCount = db.prepare('SELECT COUNT(*) as count FROM users WHERE plan = ?').get('pro').count;
+    const conversationCount = db.prepare('SELECT COUNT(*) as count FROM conversations').get().count;
+    const messageCount = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
+    res.json({ userCount, proUserCount, conversationCount, messageCount });
+  } catch (error) {
+    res.status(500).json({ error: 'İstatistikler alınamadı.' });
+  }
+});
+
+app.get('/api/admin/users', requireAdmin, (req, res) => {
+  try {
+    const users = db.prepare('SELECT id, username, email, plan, role, created_at FROM users ORDER BY created_at DESC').all();
+    res.json({ users });
+  } catch (error) {
+    res.status(500).json({ error: 'Kullanıcılar alınamadı.' });
   }
 });
 

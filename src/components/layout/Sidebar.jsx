@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Plus, MessageSquare, Trash2, Search, Sparkles, MessagesSquare, LogIn, LogOut, Star } from 'lucide-react';
+import { Plus, MessageSquare, Trash2, Search, Sparkles, MessagesSquare, LogIn, LogOut, Star, ShieldAlert } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import './Sidebar.css';
@@ -13,6 +14,7 @@ export default function Sidebar({ isOpen, onClose }) {
     deleteConversation,
   } = useChat();
 
+  const navigate = useNavigate();
   const { user, isGuest, logout, setShowAuthModal, upgradePlan } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -137,6 +139,12 @@ export default function Sidebar({ isOpen, onClose }) {
               {(!user.plan || user.plan === 'basic') && (
                 <button className="sidebar-upgrade-btn" onClick={upgradePlan}>
                   <Sparkles size={14} /> Pro'ya Yükselt
+                </button>
+              )}
+
+              {user.role === 'admin' && (
+                <button className="sidebar-admin-btn" onClick={() => { navigate('/admin'); onClose?.(); }}>
+                  <ShieldAlert size={14} /> Yönetici Paneli
                 </button>
               )}
             </div>

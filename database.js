@@ -18,6 +18,7 @@ db.exec(`
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     plan TEXT DEFAULT 'basic',
+    role TEXT DEFAULT 'user',
     created_at TEXT DEFAULT (datetime('now'))
   );
 
@@ -50,12 +51,20 @@ try {
   // Column likely already exists
 }
 
+// Auto-migrate existing databases to add 'role' column if missing
+try {
+  db.exec("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user';");
+} catch (err) {
+  // Column likely already exists
+}
+
 // Prepared statements
 const stmts = {
-  createUser: db.prepare('INSERT INTO users (username, email, password, plan) VALUES (?, ?, ?, ?)'),
+  createUser: db.prepare('INSERT INTO users (username, email, password, plan, role) VALUES (?, ?, ?, ?, ?)'),
   findUserByEmail: db.prepare('SELECT * FROM users WHERE email = ?'),
-  findUserById: db.prepare('SELECT id, username, email, plan, created_at FROM users WHERE id = ?'),
+  findUserById: db.prepare('SELECT id, username, email, plan, role, created_at FROM users WHERE id = ?'),
   upgradeUserPlan: db.prepare('UPDATE users SET plan = ? WHERE id = ?'),
+  makeUserAdmin: db.prepare("UPDATE users SET role = 'admin' WHERE username = ?"),
 
   createConversation: db.prepare('INSERT INTO conversations (id, user_id, title) VALUES (?, ?, ?)'),
   getConversations: db.prepare('SELECT * FROM conversations WHERE user_id = ? ORDER BY updated_at DESC'),
@@ -70,8 +79,8 @@ const stmts = {
 // User operations
 export function createUser(username, email, password) {
   const hash = bcrypt.hashSync(password, 10);
-  const result = stmts.createUser.run(username, email, hash, 'basic');
-  return { id: result.lastInsertRowid, username, email, plan: 'basic' };
+  const result = stmts.createUser.run(username, email, hash, 'basic', 'user');
+  return { id: result.lastInsertRowid, username, email, plan: 'basic', role: 'user' };
 }
 
 export function authenticateUser(email, password) {
@@ -79,7 +88,7 @@ export function authenticateUser(email, password) {
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return null;
   }
-  return { id: user.id, username: user.username, email: user.email, plan: user.plan || 'basic' };
+  return { id: user.id, username: user.username, email: user.email, plan: user.plan || 'basic', role: user.role || 'user' };
 }
 
 export function findUserById(id) {
@@ -89,6 +98,10 @@ export function findUserById(id) {
 export function upgradeUserPlan(id, newPlan = 'pro') {
   stmts.upgradeUserPlan.run(newPlan, id);
   return findUserById(id);
+}
+
+export function makeUserAdmin(username) {
+  stmts.makeUserAdmin.run(username);
 }
 
 // Conversation operations
