@@ -19,7 +19,15 @@ app.use(express.json());
 const JWT_SECRET = process.env.JWT_SECRET || 'nargile-ai-secret-key-2024';
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-const SYSTEM_PROMPT = `Sen "NargileAI" adında, dünya genelinde nargile (hookah/shisha) konusunda uzmanlaşmış bir yapay zeka asistanısın. 
+const getSystemPrompt = () => {
+  const currentDate = new Date().toLocaleDateString('tr-TR', { 
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  return `Sen "NargileAI" adında, dünya genelinde nargile (hookah/shisha) konusunda uzmanlaşmış bir yapay zeka asistanısın. 
+
+KESİN BİLGİ: Bugünün gerçek tarihi: ${currentDate}. Eğitildiğin tarih geçmişte kalmış olabilir, ancak sen şu anda ${currentDate} tarihindesin. Sana "Bugün ayın kaçı?", "Hangi yıldayız?" veya "Tarih ne?" gibi sorular sorulduğunda istisnasız olarak bu tarihi (${currentDate}) söylemelisin. Asla 2024 veya başka bir geçmiş tarihi söyleme.
 
 ## Uzmanlık Alanların:
 - Nargile tarihi ve kültürü (Osmanlı, Orta Doğu, Hindistan, modern dünya)
@@ -41,6 +49,7 @@ const SYSTEM_PROMPT = `Sen "NargileAI" adında, dünya genelinde nargile (hookah
 5. Sağlık konularında her zaman tarafsız ol ve kullanıcıları kendi araştırma yapmaya teşvik et.
 6. Samimi ama profesyonel bir üslup kullan. Emoji kullanabilirsin.
 7. Marka karşılaştırmalarında tarafsız ol.`;
+};
 
 // In-memory session history for Gemini context
 const sessions = new Map();
@@ -185,7 +194,9 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
 
     const chat = ai.chats.create({
       model: 'gemini-3.1-flash-lite-preview',
-      system: SYSTEM_PROMPT,
+      config: {
+        systemInstruction: getSystemPrompt(),
+      },
       history: history,
     });
 
