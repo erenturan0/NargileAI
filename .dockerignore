@@ -6,11 +6,19 @@ build/
 # Bağımlılıklar
 node_modules/
 
-# Veritabanı (Cloud Run'da boş başlanmasını sağlamak/eski verileri almamak için - localdeki test db gitmesin diye)
-# Eğer volume mount yapmayacaksanız ve default database.sqlite ile başlamak istiyorsanız yorum satırı yapın.
-# Şimdilik Cloud Run için veritabanını dışarıda bırakıyoruz, çünkü container'da sıfırdan yüklenebilir. 
-# Eğer local dekini buluta aktarmak isterseniz bu yorumu kaldırın:
-database.sqlite
+# Secrets & config
+.env
+.env.*
+!.env.example
+
+# Git & misc
+.git/
+.gitignore
+README.md
+deploy.sh
+*.db
+*.db-shm
+*.db-wal
 
 # Loglar ve geçici dosyalar
 logs

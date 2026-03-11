@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import jwt from 'jsonwebtoken';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
@@ -18,13 +20,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+
+// Security headers
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// CORS - production'da sadece kendi domain'imiz
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : ['http://localhost:3001', 'http://localhost:5173'];
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin || allowedOrigins.includes(origin)) cb(null, true);
+    else cb(new Error('CORS policy violation'));
+  },
+  credentials: true
+}));
+
+app.use(express.json({ limit: '1mb' }));
+
+// Rate limiting
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: { error: 'Çok fazla deneme. 15 dakika sonra tekrar deneyin.' } });
+const chatLimiter = rateLimit({ windowMs: 1 * 60 * 1000, max: 30, message: { error: 'Çok fazla mesaj. Biraz bekleyin.' } });
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'dist')));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'nargile-ai-secret-key-2024';
+if (!process.env.JWT_SECRET) {
+  console.error('FATAL: JWT_SECRET environment variable is not set!');
+  process.exit(1);
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const getSystemPrompt = () => {
@@ -101,7 +126,7 @@ function requireAdmin(req, res, next) {
 }
 
 // ----- Auth Routes -----
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -128,7 +153,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -305,7 +330,7 @@ app.delete('/api/conversations/:id', requireAuth, async (req, res) => {
 });
 
 // ----- Chat Route (works for both guest and authenticated) -----
-app.post('/api/chat', optionalAuth, async (req, res) => {
+app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
   try {
     const { message, sessionId, conversationId, conversationTitle } = req.body;
 
@@ -349,8 +374,6 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
     const modelName = (req.user && req.user.plan === 'pro') 
       ? 'gemini-3.1-flash-lite-preview' 
       : 'gemini-2.5-flash-lite';
-
-    console.log('Using model:', modelName, '| User plan:', req.user?.plan || 'guest');
 
     const chat = ai.chats.create({
       model: modelName,
