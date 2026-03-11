@@ -6,6 +6,11 @@
   display: flex;
   flex-direction: column;
   overscroll-behavior-y: contain;
+  min-height: 0;
+}
+
+.message-list--welcome {
+  /* intentionally no justify-content; use margin:auto on child instead */
 }
 
 .message-list-inner {
