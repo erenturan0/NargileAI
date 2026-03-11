@@ -403,12 +403,9 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    // Determine model based on user plan
-    const modelName = (req.user && req.user.plan === 'pro') 
-      ? 'gemini-3.1-flash-lite-preview'  // Pro
-      : 'gemini-2.5-flash-lite';         // Basic/Guest
+    const modelName = 'gemini-3.1-flash-lite-preview';
     const isGeneral = req.body.mode === 'general';
-    console.log(`[chat] user=${req.user?.username || 'guest'} plan=${req.user?.plan || 'none'} model=${modelName} mode=${req.body.mode || 'nargile'} isGeneral=${isGeneral}`);
+    console.log(`[chat] user=${req.user?.username || 'guest'} plan=${req.user?.plan || 'none'} model=${modelName} mode=${req.body.mode || 'nargile'}`);
 
     const chat = ai.chats.create({
       model: modelName,
