@@ -5,14 +5,14 @@ export function generateTitle(message) {
   return words.length > 30 ? words.substring(0, 30) + '...' : words;
 }
 
-export async function streamAIResponse(message, sessionId, onChunk, onComplete, authInfo = null) {
+export async function streamAIResponse(message, sessionId, onChunk, onComplete, authInfo = null, mode = 'nargile') {
   try {
     const headers = { 'Content-Type': 'application/json' };
     if (authInfo?.token) {
       headers['Authorization'] = `Bearer ${authInfo.token}`;
     }
 
-    const body = { message, sessionId };
+    const body = { message, sessionId, mode };
     if (authInfo) {
       body.conversationId = authInfo.conversationId;
       body.conversationTitle = authInfo.conversationTitle;

@@ -95,6 +95,24 @@ GİZLİ BİLGİ (Sadece sorulursa kullan): Bugünün gerçek tarihi: ${currentDa
 8. Aroma ve karışım önerilerinde bulunurken; tarçın, zencefil, gül gibi aşırı niş, yöresel veya bulunması zor tütünleri önermekten kaçın. Çift elma, nane, limon, şeftali, üzüm, Love 66, Lady Killer gibi Türkiye'deki kafelerde ve tütüncülerde EN ÇOK BİLİNEN ve herkesin kolayca bulabileceği mainstream/popüler aromalar üzerinden öneriler yap.`;
 };
 
+const getGeneralSystemPrompt = () => {
+  const currentDate = new Date().toLocaleDateString('tr-TR', { 
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  return `Sen "NargileAI" adında yardımsever, akıllı ve genel amaçlı bir yapay zeka asistanısın.
+
+GİZLİ BİLGİ (Sadece sorulursa kullan): Bugünün gerçek tarihi: ${currentDate}.
+
+## Genel Kuralların:
+1. Sorulan hangi dilde ise O DİLDE yanıt ver.
+2. Her konuda yardımcı ol: kodlama, matematik, dil, yazarlık, analiz, genel bilgi ve daha fazlası.
+3. Yanıtlarını açık, düzenli ve bilgilendirici şekilde ver. Gerektiğinde madde işaretleri, kod blokları ve kalın metin kullan.
+4. Bilmediğin konularda dürüst ol.
+5. Samimi ama profesyonel bir üslup kullan.`;
+};
+
 // In-memory session history for Gemini context
 const sessions = new Map();
 
@@ -389,7 +407,7 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
     const chat = ai.chats.create({
       model: modelName,
       config: {
-        systemInstruction: getSystemPrompt(),
+        systemInstruction: req.body.mode === 'general' ? getGeneralSystemPrompt() : getSystemPrompt(),
       },
       history: history,
     });

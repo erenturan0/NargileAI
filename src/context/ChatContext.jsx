@@ -49,6 +49,7 @@ export function ChatProvider({ children }) {
   const { user, token, isGuest } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
+  const [mode, setMode] = useState('nargile'); // 'nargile' | 'general'
   const [state, dispatch] = useReducer(chatReducer, initialState);
   const abortRef = useRef(false);
 
@@ -178,7 +179,9 @@ export function ChatProvider({ children }) {
           token,
           conversationId: convId,
           conversationTitle: convTitle,
-        } : null
+          mode,
+        } : null,
+        mode
       );
     } catch (error) {
       console.error('AI response error:', error);
@@ -198,6 +201,8 @@ export function ChatProvider({ children }) {
     switchConversation,
     deleteConversation,
     sendMessage,
+    mode,
+    setMode,
   };
 
   return (
