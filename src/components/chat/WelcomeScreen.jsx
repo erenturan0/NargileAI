@@ -52,7 +52,7 @@ const generalSuggestions = [
     desc: 'Her dilde kod yazma ve hata ayıklama',
     prompts: [
       'Python ile basit bir web scraper nasıl yazılır?',
-      'JavaScript'te async/await nasıl kullanılır, örnek verir misin?',
+      "JavaScript'te async/await nasıl kullanılır, örnek verir misin?",
       'SQL sorgusu optimizasyonu hakkında ipuçları verir misin?',
     ],
   },
