@@ -95,7 +95,7 @@
 
 @media (max-width: 768px) {
   .chat-input-container {
-    padding: var(--space-sm) var(--space-sm) var(--space-md);
+    padding: var(--space-sm) var(--space-sm) max(var(--space-md), env(safe-area-inset-bottom));
   }
 
   .chat-input-wrapper {

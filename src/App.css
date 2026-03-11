@@ -1,6 +1,6 @@
 .app-layout {
   display: flex;
-  height: 100vh;
+  height: var(--vvh, 100dvh);
   width: 100vw;
   overflow: hidden;
   background: var(--bg-primary);
@@ -50,8 +50,7 @@
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
-    height: 100dvh;
-    height: -webkit-fill-available;
+    height: var(--vvh, 100dvh);
   }
 
   .app-main::before,
