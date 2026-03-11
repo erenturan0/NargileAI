@@ -372,6 +372,8 @@
     transform: translateX(-100%);
     z-index: 25;
     box-shadow: var(--shadow-xl);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar.open {

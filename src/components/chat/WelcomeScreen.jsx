@@ -1,31 +1,31 @@
-import { Sparkles, Code, Lightbulb, BookOpen, Rocket } from 'lucide-react';
+import { Sparkles, Flame, FlaskConical, Wind, Star, Wrench } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import './WelcomeScreen.css';
 
 const suggestions = [
   {
-    icon: Code,
-    title: 'Kod Yardımı',
-    desc: 'Programlama sorularınızda yardım alın',
-    prompt: 'React ile bir todo uygulaması nasıl yapılır?',
+    icon: Flame,
+    title: 'Kömür Tavsiyeleri',
+    desc: 'Doğal ve hızlı tutuşan kömür karşılaştırması',
+    prompt: 'Doğal hindistan cevizi kömürü mü yoksa hızlı tutuşan kömür mü kullanmalıyım?',
   },
   {
-    icon: Lightbulb,
-    title: 'Fikir Üretimi',
-    desc: 'Yaratıcı fikirler ve çözümler keşfedin',
-    prompt: 'Yapay zeka ile hangi projeler geliştirilebilir?',
+    icon: FlaskConical,
+    title: 'Aroma Karışımları',
+    desc: 'Popüler tütün karışım önerileri',
+    prompt: 'Çift elma ve nane karışımı nasıl yapılır, oranlar ne olmalı?',
   },
   {
-    icon: BookOpen,
-    title: 'Öğrenme',
-    desc: 'Yeni konular hakkında bilgi edinin',
-    prompt: 'Makine öğrenmesi nedir ve nasıl çalışır?',
+    icon: Wind,
+    title: 'Nargile Kurulumu',
+    desc: 'Doğru kurulum ve çekiş ipuçları',
+    prompt: 'Nargile nasıl doğru kurulur, iyi çekiş için ne yapmalıyım?',
   },
   {
-    icon: Rocket,
-    title: 'Proje Planlama',
-    desc: 'Projelerinizi planlamanıza yardımcı olalım',
-    prompt: 'Bir e-ticaret sitesi için teknik mimari öner',
+    icon: Wrench,
+    title: 'Ekipman Seçimi',
+    desc: 'Başlık, hortum ve cam gövde tavsiyeleri',
+    prompt: 'Yeni başlayanlar için hangi nargile ekipmanlarını önerirsiniz?',
   },
 ];
 
@@ -39,8 +39,7 @@ export default function WelcomeScreen() {
       </div>
       <h1 className="welcome-title">NargileAI&apos;ya Hoş Geldiniz</h1>
       <p className="welcome-subtitle">
-        Size yardımcı olmak için buradayım. Kodlama, öğrenme, fikir üretimi ve daha fazlası
-        için hemen bir sohbet başlatın.
+        Nargile dünyasının uzman asistanı. Tütün, ekipman, kurulum ve daha fazlası için sorun!
       </p>
       <div className="welcome-suggestions">
         {suggestions.map((s, i) => (
