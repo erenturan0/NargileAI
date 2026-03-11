@@ -405,8 +405,9 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
 
     // Determine model based on user plan
     const modelName = (req.user && req.user.plan === 'pro') 
-      ? 'gemini-3.1-flash-lite-preview' 
-      : 'gemini-2.5-flash-lite';
+      ? 'gemini-3.1-flash-lite-preview'  // Pro
+      : 'gemini-2.5-flash-lite';         // Basic/Guest
+    console.log(`[chat] user=${req.user?.username || 'guest'} plan=${req.user?.plan || 'none'} model=${modelName}`);
 
     const isGeneral = req.body.mode === 'general';
 
