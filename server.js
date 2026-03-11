@@ -167,8 +167,9 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '30d' });
     res.json({ user, token });
-  } catch {
-    res.status(500).json({ error: 'Giriş sırasında bir hata oluştu.' });
+  } catch (error) {
+    console.error('Login error:', error.message);
+    res.status(500).json({ error: 'Giriş sırasında bir hata oluştu.', detail: error.message });
   }
 });
 
