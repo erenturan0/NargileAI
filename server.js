@@ -455,14 +455,16 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
     res.end();
 
   } catch (error) {
-    console.error('Gemini API Error:', error);
+    const errStatus = error.status || error.statusCode || error.code || 'unknown';
+    const errMsg = error.message || String(error);
+    console.error(`[chat-error] model=${req.body?.model} status=${errStatus} message=${errMsg}`);
 
     let userMessage = '⚠️ Bir hata oluştu. Lütfen tekrar deneyin.';
-    if (error.message?.includes('429') || error.message?.includes('quota') || error.message?.includes('RESOURCE_EXHAUSTED')) {
+    if (errStatus === 429 || errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) {
       userMessage = '⚠️ API kota sınırına ulaşıldı. Lütfen birkaç dakika bekleyip tekrar deneyin.';
-    } else if (error.message?.includes('403') || error.message?.includes('PERMISSION_DENIED')) {
+    } else if (errStatus === 403 || errMsg.includes('403') || errMsg.includes('PERMISSION_DENIED')) {
       userMessage = '🔑 API anahtarı geçersiz veya yetkisiz.';
-    } else if (error.message?.includes('404') || error.message?.includes('not found')) {
+    } else if (errStatus === 404 || errMsg.includes('404') || errMsg.includes('not found')) {
       userMessage = '⚠️ Yapay zeka modeli bulunamadı.';
     }
 
