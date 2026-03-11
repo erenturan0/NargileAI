@@ -45,6 +45,16 @@ const chatLimiter = rateLimit({ windowMs: 1 * 60 * 1000, max: 30, message: { err
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'dist')));
 
+// Health check endpoint - DB bağlantısını test eder
+app.get('/api/healthz', async (req, res) => {
+  try {
+    const result = await db.query('SELECT 1 as ok');
+    res.json({ status: 'ok', db: 'connected', dbHost: process.env.DB_HOST, dbName: process.env.DB_NAME });
+  } catch (err) {
+    res.status(500).json({ status: 'error', db: err.message, dbHost: process.env.DB_HOST, dbName: process.env.DB_NAME });
+  }
+});
+
 if (!process.env.JWT_SECRET) {
   console.error('FATAL: JWT_SECRET environment variable is not set!');
   process.exit(1);
