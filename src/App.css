@@ -46,3 +46,14 @@
   position: relative;
   z-index: 1;
 }
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-main::before,
+  .app-main::after {
+    display: none;
+  }
+}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
-const API_URL = 'http://localhost:3001/api/auth';
+const API_URL = '/api/auth';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -63,8 +63,6 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     localStorage.removeItem('nargile-token');
-    localStorage.removeItem('nargile-conversations');
-    localStorage.removeItem('nargile-active-id');
     setToken(null);
     setUser(null);
   }, []);

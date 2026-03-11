@@ -198,10 +198,34 @@
   border: none;
   color: var(--accent-primary);
   font-weight: 600;
+  -webkit-tap-highlight-color: transparent;
   cursor: pointer;
   font-size: 0.85rem;
 }
 
 .auth-switch-btn:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .auth-modal {
+    width: 95%;
+    padding: 1.5rem;
+    border-radius: 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .auth-field input {
+    font-size: 16px; /* prevents iOS zoom */
+  }
+
+  .auth-title {
+    font-size: 1.2rem;
+  }
+
+  .auth-icon {
+    width: 48px;
+    height: 48px;
+  }
 }

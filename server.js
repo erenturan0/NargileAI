@@ -9,7 +9,7 @@ import {
   createUser, authenticateUser, findUserById, upgradeUserPlan,
   createConversation as dbCreateConv, getConversations as dbGetConvs,
   updateConversationTitle, deleteConversation as dbDeleteConv,
-  addMessage, updateUserRole, db
+  addMessage, updateUserRole, deleteUser, db
 } from './database.js';
 
 dotenv.config();
@@ -164,16 +164,16 @@ app.post('/api/auth/upgrade', requireAuth, async (req, res) => {
 
 app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   try {
-    const [[usersRow]] = await db.execute('SELECT COUNT(*) as count FROM users');
-    const [[proUsersRow]] = await db.execute('SELECT COUNT(*) as count FROM users WHERE plan = ?', ['pro']);
-    const [[convsRow]] = await db.execute('SELECT COUNT(*) as count FROM conversations');
-    const [[msgsRow]] = await db.execute('SELECT COUNT(*) as count FROM messages');
+    const usersRow = await db.query('SELECT COUNT(*) as count FROM users');
+    const proUsersRow = await db.query('SELECT COUNT(*) as count FROM users WHERE plan = $1', ['pro']);
+    const convsRow = await db.query('SELECT COUNT(*) as count FROM conversations');
+    const msgsRow = await db.query('SELECT COUNT(*) as count FROM messages');
     
     res.json({ 
-      userCount: usersRow.count, 
-      proUserCount: proUsersRow.count, 
-      conversationCount: convsRow.count, 
-      messageCount: msgsRow.count 
+      userCount: parseInt(usersRow.rows[0].count), 
+      proUserCount: parseInt(proUsersRow.rows[0].count), 
+      conversationCount: parseInt(convsRow.rows[0].count), 
+      messageCount: parseInt(msgsRow.rows[0].count) 
     });
   } catch (error) {
     res.status(500).json({ error: 'İstatistikler alınamadı.' });
@@ -182,8 +182,8 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 
 app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
-    const [users] = await db.execute('SELECT id, username, email, plan, role, created_at FROM users ORDER BY created_at DESC');
-    res.json({ users });
+    const result = await db.query('SELECT id, username, email, plan, role, created_at FROM users ORDER BY created_at DESC');
+    res.json({ users: result.rows });
   } catch (error) {
     res.status(500).json({ error: 'Kullanıcılar alınamadı.' });
   }
@@ -257,6 +257,34 @@ app.post('/api/admin/users/:id/plan', requireAdmin, async (req, res) => {
   }
 });
 
+app.delete('/api/admin/users/:id', requireAdmin, async (req, res) => {
+  try {
+    const targetId = parseInt(req.params.id, 10);
+
+    if (req.user.role !== 'superuser') {
+      return res.status(403).json({ error: 'Kullanıcı silme yetkisi sadece superuser\'a aittir.' });
+    }
+
+    if (targetId === req.user.id) {
+      return res.status(403).json({ error: 'Kendinizi silemezsiniz.' });
+    }
+
+    const targetUser = await findUserById(targetId);
+    if (!targetUser) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+    }
+
+    if (targetUser.role === 'superuser') {
+      return res.status(403).json({ error: 'Superuser silinemez.' });
+    }
+
+    await deleteUser(targetId);
+    res.json({ message: 'Kullanıcı silindi.', deletedId: targetId });
+  } catch (error) {
+    res.status(500).json({ error: 'Kullanıcı silinemedi.' });
+  }
+});
+
 // ----- Conversation Routes (authenticated only) -----
 app.get('/api/conversations', requireAuth, async (req, res) => {
   try {
@@ -320,7 +348,9 @@ app.post('/api/chat', optionalAuth, async (req, res) => {
     // Determine model based on user plan
     const modelName = (req.user && req.user.plan === 'pro') 
       ? 'gemini-3.1-flash-lite-preview' 
-      : 'gemini-1.5-flash-8b';
+      : 'gemini-2.5-flash-lite';
+
+    console.log('Using model:', modelName, '| User plan:', req.user?.plan || 'guest');
 
     const chat = ai.chats.create({
       model: modelName,

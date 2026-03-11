@@ -24,7 +24,6 @@ RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 COPY server.js .
 COPY database.js .
-COPY .env* ./
 
 # Port ayarı (Cloud Run varsayılan olarak 8080 bekler, ama biz PORT environment variable'ını okuyacağız)
 ENV PORT=8080

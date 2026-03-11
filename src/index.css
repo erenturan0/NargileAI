@@ -218,3 +218,19 @@ input, textarea {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+/* ===== Mobile Fixes ===== */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 280px;
+    --header-height: 54px;
+    --font-size-base: 0.875rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-xl: 1.25rem;
+  }
+
+  body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

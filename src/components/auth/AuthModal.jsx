@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Mail, Lock, User, X, LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import './AuthModal.css';
@@ -10,6 +10,15 @@ export default function AuthModal() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({ username: '', email: '', password: '' });
+
+  useEffect(() => {
+    if (showAuthModal) {
+      setForm({ username: '', email: '', password: '' });
+      setError('');
+      setIsLogin(true);
+      setShowPassword(false);
+    }
+  }, [showAuthModal]);
 
   if (!showAuthModal) return null;
 
@@ -34,6 +43,8 @@ export default function AuthModal() {
   const switchMode = () => {
     setIsLogin(!isLogin);
     setError('');
+    setForm({ username: '', email: '', password: '' });
+    setShowPassword(false);
   };
 
   return (

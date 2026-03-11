@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X, Stars, TrendingUp, TrendingDown } from 'lucide-react';
+import { Users, MessageSquare, ArrowLeft, Star, ShieldAlert, BarChart3, Clock, Check, X, Stars, TrendingUp, TrendingDown, Trash2 } from 'lucide-react';
 import './AdminPanel.css';
 
 export default function AdminPanel() {
@@ -27,8 +27,8 @@ export default function AdminPanel() {
         const headers = { Authorization: `Bearer ${token}` };
         
         const [statsRes, usersRes] = await Promise.all([
-          fetch('http://localhost:3001/api/admin/stats', { headers }),
-          fetch('http://localhost:3001/api/admin/users', { headers })
+          fetch('/api/admin/stats', { headers }),
+          fetch('/api/admin/users', { headers })
         ]);
 
         if (!statsRes.ok || !usersRes.ok) throw new Error('Veriler alınamadı (Yetkisiz erişim olabilir)');
@@ -55,7 +55,7 @@ export default function AdminPanel() {
 
   const handleStatusChange = async (targetUserId, action) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/admin/users/${targetUserId}/${action}`, {
+      const res = await fetch(`/api/admin/users/${targetUserId}/${action}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -70,7 +70,7 @@ export default function AdminPanel() {
 
   const handleRoleChange = async (targetUserId, newRole) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/admin/users/${targetUserId}/role`, {
+      const res = await fetch(`/api/admin/users/${targetUserId}/role`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -90,9 +90,26 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteUser = async (targetUserId, username) => {
+    if (!confirm(`"${username}" kullanıcısını silmek istediğinize emin misiniz? Bu işlem geri alınamaz!`)) return;
+    try {
+      const res = await fetch(`/api/admin/users/${targetUserId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Kullanıcı silinemedi.');
+      }
+      setUserList(prev => prev.filter(u => u.id !== targetUserId));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handlePlanChange = async (userId, newPlan) => {
     try {
-      const res = await fetch(`http://localhost:3001/api/admin/users/${userId}/plan`, {
+      const res = await fetch(`/api/admin/users/${userId}/plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,6 +299,12 @@ export default function AdminPanel() {
                             ) : (
                               <button onClick={() => handlePlanChange(u.id, 'pro')} className="admin-action-btn promote" title="Pro Plan'a Yükselt">
                                 <TrendingUp size={14} />
+                              </button>
+                            )}
+
+                            {user.role === 'superuser' && u.role !== 'superuser' && (
+                              <button onClick={() => handleDeleteUser(u.id, u.username)} className="admin-action-btn delete" title="Kullanıcıyı Sil">
+                                <Trash2 size={14} />
                               </button>
                             )}
                           </div>

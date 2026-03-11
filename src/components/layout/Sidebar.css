@@ -368,6 +368,7 @@
     position: fixed;
     left: 0;
     top: 0;
+    width: var(--sidebar-width);
     transform: translateX(-100%);
     z-index: 25;
     box-shadow: var(--shadow-xl);
@@ -379,5 +380,15 @@
 
   .sidebar-overlay.visible {
     display: block;
+  }
+
+  .sidebar-footer-info {
+    flex-wrap: wrap;
+  }
+
+  .sidebar-upgrade-btn,
+  .sidebar-admin-btn {
+    font-size: var(--font-size-xs);
+    padding: 8px 12px;
   }
 }

@@ -127,10 +127,27 @@
 
 @media (max-width: 768px) {
   .message-bubble {
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    gap: var(--space-sm);
   }
 
   .message-content-wrapper {
-    max-width: 85%;
+    max-width: 90%;
+  }
+
+  .message-avatar {
+    width: 30px;
+    height: 30px;
+    font-size: var(--font-size-xs);
+  }
+
+  .message-content {
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .message-content pre {
+    font-size: var(--font-size-xs);
+    padding: var(--space-sm);
   }
 }

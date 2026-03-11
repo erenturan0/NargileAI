@@ -15,6 +15,9 @@ const db = new Pool({
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
+  ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost'
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 // Initialize database schema
@@ -115,6 +118,10 @@ export async function upgradeUserPlan(id, newPlan) {
 export async function updateUserRole(id, newRole) {
   await db.query('UPDATE users SET role = $1 WHERE id = $2', [newRole, id]);
   return findUserById(id);
+}
+
+export async function deleteUser(id) {
+  await db.query('DELETE FROM users WHERE id = $1', [id]);
 }
 
 export async function makeUserAdmin(username) {

@@ -102,5 +102,19 @@
 
   .header {
     padding: 0 var(--space-md);
+    height: var(--header-height);
+  }
+
+  .model-selector {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .model-badge {
+    display: none;
+  }
+
+  .header-status span {
+    display: none;
   }
 }

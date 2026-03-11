@@ -97,14 +97,31 @@
 
 @media (max-width: 768px) {
   .welcome-screen {
-    padding: var(--space-xl);
+    padding: var(--space-md);
+    justify-content: flex-start;
+    padding-top: var(--space-xl);
   }
 
-  .welcome-suggestions {
-    grid-template-columns: 1fr;
+  .welcome-logo {
+    width: 60px;
+    height: 60px;
   }
 
   .welcome-title {
     font-size: var(--font-size-xl);
+  }
+
+  .welcome-subtitle {
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .welcome-suggestions {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .suggestion-card {
+    padding: var(--space-md);
   }
 }

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3001/api/chat';
+const API_URL = '/api/chat';
 
 export function generateTitle(message) {
   const words = message.split(' ').slice(0, 5).join(' ');

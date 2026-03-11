@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import { streamAIResponse, generateTitle } from '../services/aiService';
 
 const ChatContext = createContext(null);
-const API_URL = 'http://localhost:3001/api';
+const API_URL = '/api';
 
 function createMessage(role, content) {
   return {
