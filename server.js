@@ -403,8 +403,10 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const modelName = 'gemini-3.1-flash-lite-preview';
     const isGeneral = req.body.mode === 'general';
+    const modelName = isGeneral
+      ? 'gemini-2.5-flash-lite'           // General mode - Google Search destekli
+      : 'gemini-3.1-flash-lite-preview';  // Nargile mode - 500 RPM
     console.log(`[chat] user=${req.user?.username || 'guest'} plan=${req.user?.plan || 'none'} model=${modelName} mode=${req.body.mode || 'nargile'}`);
 
     const chat = ai.chats.create({
