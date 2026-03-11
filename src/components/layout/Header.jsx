@@ -5,7 +5,8 @@ import './Header.css';
 
 export default function Header({ onMenuToggle }) {
   const { mode, setMode } = useChat();
-  const { isGuest, setShowAuthModal } = useAuth();
+  const { user, isGuest, setShowAuthModal } = useAuth();
+  const isAdmin = user && (user.role === 'admin' || user.role === 'superuser');
 
   return (
     <header className="header">
@@ -21,20 +22,22 @@ export default function Header({ onMenuToggle }) {
         </div>
       </div>
       <div className="header-center">
-        <div className="mode-toggle">
-          <button
-            className={`mode-toggle-btn${mode === 'nargile' ? ' active' : ''}`}
-            onClick={() => setMode('nargile')}
-          >
-            🌿 Nargile
-          </button>
-          <button
-            className={`mode-toggle-btn${mode === 'general' ? ' active' : ''}`}
-            onClick={() => setMode('general')}
-          >
-            🌐 Genel
-          </button>
-        </div>
+        {isAdmin && (
+          <div className="mode-toggle">
+            <button
+              className={`mode-toggle-btn${mode === 'nargile' ? ' active' : ''}`}
+              onClick={() => setMode('nargile')}
+            >
+              🌿 Nargile
+            </button>
+            <button
+              className={`mode-toggle-btn${mode === 'general' ? ' active' : ''}`}
+              onClick={() => setMode('general')}
+            >
+              🌐 Genel
+            </button>
+          </div>
+        )}
       </div>
       <div className="header-right">
         {isGuest && (

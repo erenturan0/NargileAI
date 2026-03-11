@@ -403,7 +403,8 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const isGeneral = req.body.mode === 'general';
+    const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'superuser');
+    const isGeneral = req.body.mode === 'general' && isAdmin;
     const modelName = isGeneral
       ? 'gemini-2.5-flash-lite'           // General mode - Google Search destekli
       : 'gemini-3.1-flash-lite-preview';  // Nargile mode - 500 RPM
