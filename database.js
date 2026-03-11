@@ -14,7 +14,7 @@ const db = new Pool({
   port: process.env.DB_PORT || 5432,
   max: 10,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
   ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost'
     ? { rejectUnauthorized: false }
     : false,
@@ -80,7 +80,7 @@ async function initDb() {
 }
 
 // Call initDb on connection
-initDb();
+initDb().catch(err => console.error('initDb failed (non-fatal):', err.message));
 
 // User operations
 export async function createUser(username, email, password) {
