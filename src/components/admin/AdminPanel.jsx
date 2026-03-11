@@ -49,7 +49,7 @@ export default function AdminPanel() {
   }, [user, token, loading, navigate]);
 
   const pendingUsers = userList.filter(u => u.plan === 'pending_pro');
-  const activeUsers = userList.filter(u => u.plan !== 'pending_pro');
+  const activeUsers = userList;
 
   const displayedUsers = activeTab === 'requests' ? pendingUsers : activeUsers;
 
