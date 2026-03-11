@@ -187,7 +187,7 @@ export function ChatProvider({ children }) {
       console.error('AI response error:', error);
       dispatch({ type: 'RESET_STREAMING' });
     }
-  }, [activeId, state.isLoading, conversations, user, token]);
+  }, [activeId, state.isLoading, conversations, user, token, mode]);
 
   const value = {
     conversations,

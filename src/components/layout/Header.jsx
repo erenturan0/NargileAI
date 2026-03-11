@@ -1,7 +1,10 @@
 import { Menu, ChevronDown, Zap } from 'lucide-react';
+import { useChat } from '../../context/ChatContext';
 import './Header.css';
 
 export default function Header({ onMenuToggle }) {
+  const { mode, setMode } = useChat();
+
   return (
     <header className="header">
       <div className="header-left">
@@ -13,6 +16,22 @@ export default function Header({ onMenuToggle }) {
           <span className="model-name">NargileAI</span>
           <span className="model-badge">v1.0</span>
           <ChevronDown size={14} />
+        </div>
+      </div>
+      <div className="header-center">
+        <div className="mode-toggle">
+          <button
+            className={`mode-toggle-btn${mode === 'nargile' ? ' active' : ''}`}
+            onClick={() => setMode('nargile')}
+          >
+            🌿 Nargile
+          </button>
+          <button
+            className={`mode-toggle-btn${mode === 'general' ? ' active' : ''}`}
+            onClick={() => setMode('general')}
+          >
+            🌐 Genel
+          </button>
         </div>
       </div>
       <div className="header-right">

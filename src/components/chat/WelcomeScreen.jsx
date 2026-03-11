@@ -7,25 +7,41 @@ const nargileSuggestions = [
     icon: Flame,
     title: 'Kömür Tavsiyeleri',
     desc: 'Doğal ve hızlı tutuşan kömür karşılaştırması',
-    prompt: 'Doğal hindistan cevizi kömürü mü yoksa hızlı tutuşan kömür mü kullanmalıyım?',
+    prompts: [
+      'Doğal hindistan cevizi kömürü mü yoksa hızlı tutuşan kömür mü kullanmalıyım?',
+      'Nargile için en iyi kömür markası hangisi?',
+      'Kömür ne zaman değiştirilmeli, nasıl anlarım?',
+    ],
   },
   {
     icon: FlaskConical,
     title: 'Aroma Karışımları',
     desc: 'Popüler tütün karışım önerileri',
-    prompt: 'Çift elma ve nane karışımı nasıl yapılır, oranlar ne olmalı?',
+    prompts: [
+      'Limon ve nane karışımı için ideal oran nedir?',
+      'Love 66 ile hangi aromalar iyi gider?',
+      'Şeftali bazlı bir karışım tarifi önerir misin?',
+    ],
   },
   {
     icon: Wind,
     title: 'Nargile Kurulumu',
     desc: 'Doğru kurulum ve çekiş ipuçları',
-    prompt: 'Nargile nasıl doğru kurulur, iyi çekiş için ne yapmalıyım?',
+    prompts: [
+      'Nargile nasıl doğru kurulur, iyi çekiş için ne yapmalıyım?',
+      'Sıkı çekiş sorunum var, nedeni ne olabilir?',
+      'Su haznesi ne kadar dolu olmalı?',
+    ],
   },
   {
     icon: Wrench,
     title: 'Ekipman Seçimi',
     desc: 'Başlık, hortum ve cam gövde tavsiyeleri',
-    prompt: 'Yeni başlayanlar için hangi nargile ekipmanlarını önerirsiniz?',
+    prompts: [
+      'Yeni başlayanlar için hangi nargile ekipmanlarını önerirsiniz?',
+      'Silikon hortum mu klasik hortum mu daha iyi?',
+      'Phunnel başlık mı Vortex başlık mı tercih etmeliyim?',
+    ],
   },
 ];
 
@@ -34,30 +50,50 @@ const generalSuggestions = [
     icon: Code,
     title: 'Kod Yaz',
     desc: 'Her dilde kod yazma ve hata ayıklama',
-    prompt: 'Python ile basit bir web scraper nasıl yazılır?',
+    prompts: [
+      'Python ile basit bir web scraper nasıl yazılır?',
+      'JavaScript'te async/await nasıl kullanılır, örnek verir misin?',
+      'SQL sorgusu optimizasyonu hakkında ipuçları verir misin?',
+    ],
   },
   {
     icon: BookOpen,
     title: 'Öğren & Araştır',
     desc: 'Herhangi bir konuyu açıkla ve özetle',
-    prompt: 'Kuantum bilgisayarlarını basitçe anlatır mısın?',
+    prompts: [
+      'Kuantum bilgisayarlarını basitçe anlatır mısın?',
+      'Yapay zeka ile makine öğrenmesi arasındaki fark nedir?',
+      'Blockchain teknolojisi nasıl çalışır?',
+    ],
   },
   {
     icon: Lightbulb,
     title: 'Fikir Üret',
     desc: 'Yaratıcı fikirler ve beyin fırtınası',
-    prompt: 'Küçük bir işletme için 5 benzersiz pazarlama fikri ver.',
+    prompts: [
+      'Küçük bir işletme için 5 benzersiz pazarlama fikri ver.',
+      'Mobil uygulama için özgün bir konsept önerir misin?',
+      'Sosyal medya içerik takvimi nasıl oluşturulur?',
+    ],
   },
   {
     icon: MessageSquare,
     title: 'Yazı & Metin',
     desc: 'Yazı düzenleme, çeviri ve özetleme',
-    prompt: 'Özgeçmişim için güçlü bir kapak mektubu yazar mısın?',
+    prompts: [
+      'Özgeçmişim için güçlü bir kapak mektubu yazar mısın?',
+      'Bu metni daha profesyonel hale getirir misin?',
+      'İngilizce e-posta yazmama yardım eder misin?',
+    ],
   },
 ];
 
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 export default function WelcomeScreen() {
-  const { sendMessage, mode, setMode } = useChat();
+  const { sendMessage, mode } = useChat();
   const suggestions = mode === 'general' ? generalSuggestions : nargileSuggestions;
 
   return (
@@ -71,26 +107,12 @@ export default function WelcomeScreen() {
           ? 'Genel amaçlı asistan. Her konuda yardımcı olmaya hazırım!'
           : 'Nargile dünyasının uzman asistanı. Tütün, ekipman, kurulum ve daha fazlası için sorun!'}
       </p>
-      <div className="mode-selector">
-        <button
-          className={`mode-btn${mode === 'nargile' ? ' active' : ''}`}
-          onClick={() => setMode('nargile')}
-        >
-          🌿 Nargile Modu
-        </button>
-        <button
-          className={`mode-btn${mode === 'general' ? ' active' : ''}`}
-          onClick={() => setMode('general')}
-        >
-          🌐 Genel Mod
-        </button>
-      </div>
       <div className="welcome-suggestions">
         {suggestions.map((s, i) => (
           <button
             key={i}
             className="suggestion-card"
-            onClick={() => sendMessage(s.prompt)}
+            onClick={() => sendMessage(pickRandom(s.prompts))}
           >
             <s.icon className="suggestion-icon" size={22} />
             <span className="suggestion-title">{s.title}</span>

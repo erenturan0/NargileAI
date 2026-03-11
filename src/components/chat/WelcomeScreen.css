@@ -46,38 +46,6 @@
   line-height: 1.6;
 }
 
-.mode-selector {
-  display: flex;
-  gap: var(--space-sm);
-  margin-bottom: var(--space-xl);
-}
-
-.mode-btn {
-  padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-  border: 1.5px solid var(--border-color);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.mode-btn:hover {
-  border-color: var(--accent-primary);
-  color: var(--text-primary);
-}
-
-.mode-btn.active {
-  background: var(--accent-gradient);
-  background-size: 200% 200%;
-  animation: gradientShift 4s ease infinite;
-  border-color: transparent;
-  color: white;
-  box-shadow: 0 0 16px rgba(124, 58, 237, 0.35);
-}
-
 .welcome-suggestions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
