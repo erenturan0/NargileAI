@@ -50,6 +50,8 @@
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
+    height: 100dvh;
+    height: -webkit-fill-available;
   }
 
   .app-main::before,

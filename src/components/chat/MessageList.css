@@ -1,8 +1,10 @@
 .message-list {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   display: flex;
   flex-direction: column;
+  overscroll-behavior-y: contain;
 }
 
 .message-list-inner {
