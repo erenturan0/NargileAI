@@ -176,6 +176,7 @@
 
 .sidebar-footer {
   padding: var(--space-md);
+  padding-bottom: max(var(--space-md), env(safe-area-inset-bottom));
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -369,6 +370,7 @@
     left: 0;
     top: 0;
     width: var(--sidebar-width);
+    height: var(--vvh, 100dvh);
     transform: translateX(-100%);
     z-index: 25;
     box-shadow: var(--shadow-xl);
