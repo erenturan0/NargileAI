@@ -6,18 +6,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Create a connection pool to PostgreSQL / Cloud SQL
+const isUnixSocket = process.env.DB_HOST?.startsWith('/');
+
 const db = new Pool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'nargile_ai',
-  port: process.env.DB_PORT || 5432,
+  ...(isUnixSocket ? {} : { port: parseInt(process.env.DB_PORT) || 5432 }),
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
-  ssl: process.env.DB_HOST && process.env.DB_HOST !== 'localhost'
-    ? { rejectUnauthorized: false }
-    : false,
+  ssl: isUnixSocket ? false : (process.env.DB_HOST && process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false),
 });
 
 // Initialize database schema
