@@ -408,10 +408,13 @@ app.post('/api/chat', chatLimiter, optionalAuth, async (req, res) => {
       ? 'gemini-3.1-flash-lite-preview' 
       : 'gemini-2.5-flash-lite';
 
+    const isGeneral = req.body.mode === 'general';
+
     const chat = ai.chats.create({
       model: modelName,
       config: {
-        systemInstruction: req.body.mode === 'general' ? getGeneralSystemPrompt() : getSystemPrompt(),
+        systemInstruction: isGeneral ? getGeneralSystemPrompt() : getSystemPrompt(),
+        tools: isGeneral ? [{ googleSearch: {} }] : undefined,
       },
       history: history,
     });
