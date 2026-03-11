@@ -1,9 +1,11 @@
-import { Menu, ChevronDown, Zap } from 'lucide-react';
+import { Menu, ChevronDown, Zap, LogIn } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
+import { useAuth } from '../../context/AuthContext';
 import './Header.css';
 
 export default function Header({ onMenuToggle }) {
   const { mode, setMode } = useChat();
+  const { isGuest, setShowAuthModal } = useAuth();
 
   return (
     <header className="header">
@@ -35,7 +37,16 @@ export default function Header({ onMenuToggle }) {
         </div>
       </div>
       <div className="header-right">
-        <div className="header-status">
+        {isGuest && (
+          <button
+            className="header-login-btn"
+            onClick={() => setShowAuthModal(true)}
+          >
+            <LogIn size={15} />
+            <span>Giriş Yap</span>
+          </button>
+        )}
+        <div className="header-status header-status--desktop">
           <div className="status-dot" />
           <span>Çevrimiçi</span>
           <Zap size={12} />
